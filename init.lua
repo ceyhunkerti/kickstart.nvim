@@ -170,6 +170,9 @@ vim.o.confirm = true
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+-- Keep visual mode after indenting
+vim.keymap.set('v', '>', '>gv', { desc = 'Indent and keep selection' })
+vim.keymap.set('v', '<', '<gv', { desc = 'Un-indent and keep selection' })
 
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
@@ -288,7 +291,21 @@ require('lazy').setup({
       },
     },
   },
-
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
+  },
+  {
+    'kdheepak/lazygit.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    cmd = 'LazyGit',
+    keys = {
+      { '<leader>gg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
+  },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -320,10 +337,14 @@ require('lazy').setup({
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
         { 'gr', group = 'LSP Actions', mode = { 'n' } },
+        { '<leader>d', group = '[D]ebug' }, -- NEW: debug keymap group
       },
     },
   },
-
+  {
+    'supermaven-inc/supermaven-nvim',
+    opts = {},
+  },
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -340,7 +361,7 @@ require('lazy').setup({
     -- your replacement picker by requiring it explicitly (e.g. 'custom.plugins.snacks')
 
     -- Note: If you customize your config for yourself,
-    -- it’s best to remove the Telescope plugin config entirely
+    -- it's best to remove the Telescope plugin config entirely
     -- instead of just disabling it here, to keep your config clean.
     enabled = true,
     event = 'VimEnter',
@@ -394,6 +415,17 @@ require('lazy').setup({
         --   },
         -- },
         -- pickers = {}
+
+        defaults = {
+          mappings = {
+            i = {
+              ['<C-d>'] = require('telescope.actions').delete_buffer,
+            },
+            n = {
+              ['d'] = require('telescope.actions').delete_buffer,
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = { require('telescope.themes').get_dropdown() },
         },
@@ -476,6 +508,106 @@ require('lazy').setup({
 
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function() builtin.find_files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
+      vim.keymap.set('n', '<leader>sF', function() builtin.find_files { cwd = '/', hidden = true } end, { desc = '[S]earch [F]iles from root (/)' })
+    end,
+  },
+
+  {
+    'kevinhwang91/nvim-ufo',
+    dependencies = 'kevinhwang91/promise-async',
+    config = function()
+      -- Fold options (required for ufo to work properly)
+      vim.o.foldcolumn = '0' -- '0' is also ok
+      vim.o.foldlevel = 99 -- Using ufo provider need a large value
+      vim.o.foldlevelstart = 99
+
+      -- Keybinds for UFO
+      vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
+      vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+
+      require('ufo').setup {
+        provider_selector = function(bufnr, filetype, buftype) return { 'treesitter', 'indent' } end,
+      }
+    end,
+  },
+
+  -- [[ RUST: Debugging — nvim-dap + nvim-dap-ui + codelldb ]]
+  --
+  --  nvim-dap is the Debug Adapter Protocol client for Neovim.
+  --  nvim-dap-ui provides the visual panels (variables, stack, breakpoints).
+  --  codelldb is the actual debug adapter, installed via Mason.
+  --
+  --  Prerequisites:
+  --    rustup component add rust-analyzer  (LSP)
+  --    rustup component add rustfmt        (formatter)
+  --    Mason will auto-install codelldb on first launch.
+  --
+  --  Debug keymaps (all under <leader>d):
+  --    <leader>db  toggle breakpoint
+  --    <leader>dc  continue / start session
+  --    <leader>ds  step over
+  --    <leader>di  step into
+  --    <leader>do  step out
+  --    <leader>du  toggle UI panels
+  --    <leader>dq  terminate session
+  {
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      'nvim-neotest/nvim-nio',
+      {
+        'rcarriga/nvim-dap-ui',
+        ---@module 'dapui'
+        ---@type dapui.Config
+        opts = {},
+      },
+    },
+    config = function()
+      local dap = require 'dap'
+      local dapui = require 'dapui'
+
+      -- Auto open/close dapui when a debug session starts/ends
+      dap.listeners.after.event_initialized['dapui_config'] = dapui.open
+      dap.listeners.before.event_terminated['dapui_config'] = dapui.close
+      dap.listeners.before.event_exited['dapui_config'] = dapui.close
+
+      -- Point nvim-dap at the codelldb binary installed by Mason
+      local mason_bin = vim.fn.stdpath 'data' .. '/mason/bin/codelldb'
+      dap.adapters.codelldb = {
+        type = 'server',
+        port = '${port}',
+        executable = {
+          command = mason_bin,
+          args = { '--port', '${port}' },
+        },
+      }
+
+      -- Rust debug configuration.
+      -- Looks for target/debug/<project-name> automatically.
+      -- Falls back to a file picker prompt if not found.
+      dap.configurations.rust = {
+        {
+          name = 'Launch binary',
+          type = 'codelldb',
+          request = 'launch',
+          program = function()
+            local cwd = vim.fn.getcwd()
+            local default = cwd .. '/target/debug/' .. vim.fn.fnamemodify(cwd, ':t')
+            if vim.fn.executable(default) == 1 then return default end
+            return vim.fn.input('Path to executable: ', cwd .. '/target/debug/', 'file')
+          end,
+          cwd = '${workspaceFolder}',
+          stopOnEntry = false,
+        },
+      }
+
+      -- Debug keymaps
+      vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = '[D]ebug toggle [B]reakpoint' })
+      vim.keymap.set('n', '<leader>dc', dap.continue, { desc = '[D]ebug [C]ontinue / Start' })
+      vim.keymap.set('n', '<leader>ds', dap.step_over, { desc = '[D]ebug [S]tep over' })
+      vim.keymap.set('n', '<leader>di', dap.step_into, { desc = '[D]ebug Step [I]nto' })
+      vim.keymap.set('n', '<leader>do', dap.step_out, { desc = '[D]ebug Step [O]ut' })
+      vim.keymap.set('n', '<leader>du', dapui.toggle, { desc = '[D]ebug [U]I toggle' })
+      vim.keymap.set('n', '<leader>dq', dap.terminate, { desc = '[D]ebug [Q]uit' })
     end,
   },
 
@@ -603,7 +735,6 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
@@ -612,6 +743,10 @@ require('lazy').setup({
         -- ts_ls = {},
 
         stylua = {}, -- Used to format Lua code
+
+        -- [[ RUST: rust-analyzer is provided by rustup, not Mason.
+        --    Run: rustup component add rust-analyzer ]]
+        rust_analyzer = {},
 
         -- Special Lua Config, as recommended by neovim help docs
         lua_ls = {
@@ -650,9 +785,12 @@ require('lazy').setup({
       --    :Mason
       --
       -- You can press `g?` for help in this menu.
-      local ensure_installed = vim.tbl_keys(servers or {})
+      --
+      -- [[ RUST: rust_analyzer is excluded from Mason (managed by rustup).
+      --    codelldb is added so Mason installs the debug adapter. ]]
+      local ensure_installed = vim.tbl_filter(function(name) return name ~= 'rust_analyzer' end, vim.tbl_keys(servers or {}))
       vim.list_extend(ensure_installed, {
-        -- You can add other tools here that you want Mason to install
+        'codelldb', -- debug adapter for Rust (and C/C++)
       })
 
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -696,6 +834,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        rust = { 'rustfmt' }, -- [[ RUST: format on save via rustfmt (from rustup) ]]
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -760,7 +899,7 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+        preset = 'super-tab',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -797,28 +936,48 @@ require('lazy').setup({
       signature = { enabled = true },
     },
   },
-
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  {
+    'sainnhe/gruvbox-material',
+    priority = 1000,
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
+      vim.opt.termguicolors = true
 
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- Disable ALL italics
+      vim.g.gruvbox_material_enable_italic = 0
+      vim.g.gruvbox_material_disable_italic_comment = 1
+
+      -- (optional but recommended)
+      vim.g.gruvbox_material_background = 'medium'
+      vim.g.gruvbox_material_better_performance = 1
+
+      -- Load the colorscheme
+      vim.cmd.colorscheme 'gruvbox-material'
+      vim.api.nvim_set_hl(0, 'IblIndent', { fg = '#3d3d3d' }) -- dim inactive guides
+      vim.api.nvim_set_hl(0, 'IblScope', { fg = '#606060' }) -- slightly brighter active scope
     end,
   },
+
+  -- { -- You can easily change to a different colorscheme.
+  --   -- Change the name of the colorscheme plugin below, and then
+  --   -- change the command in the config to whatever the name of that colorscheme is.
+  --   --
+  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --   'folke/tokyonight.nvim',
+  --   priority = 1000, -- Make sure to load this before all the other start plugins.
+  --   config = function()
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     require('tokyonight').setup {
+  --       styles = {
+  --         comments = { italic = false }, -- Disable italics in comments
+  --       },
+  --     }
+
+  --     -- Load the colorscheme here.
+  --     -- Like many other themes, this one has different styles, and you could load
+  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --     vim.cmd.colorscheme 'tokyonight-night'
+  --   end,
+  -- },
 
   -- Highlight todo, notes, etc in comments
   {
@@ -830,7 +989,14 @@ require('lazy').setup({
     ---@diagnostic disable-next-line: missing-fields
     opts = { signs = false },
   },
-
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    opts = {
+      indent = { char = '▏' },
+      scope = { enabled = true }, -- highlights the active indent scope
+    },
+  },
   { -- Collection of various small independent plugins/modules
     'nvim-mini/mini.nvim',
     config = function()
@@ -874,7 +1040,8 @@ require('lazy').setup({
     branch = 'main',
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      -- [[ RUST: added 'rust' parser for syntax highlighting ]]
+      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'rust', 'vim', 'vimdoc' }
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
