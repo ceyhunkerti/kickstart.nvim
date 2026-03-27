@@ -102,7 +102,7 @@ vim.g.have_nerd_font = true
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
-vim.o.relativenumber = true
+vim.o.relativenumber = false
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -139,6 +139,9 @@ vim.o.timeoutlen = 300
 vim.o.splitright = true
 vim.o.splitbelow = true
 
+-- A global statusline
+vim.o.laststatus = 3
+
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
@@ -164,8 +167,21 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+vim.o.report = 9999
+vim.o.shortmess = vim.o.shortmess .. 'W'
+
+vim.opt.cmdheight = 0
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+
+vim.keymap.set({ 'n', 'i' }, '<C-\\>', '<cmd>e .<CR>', { desc = 'Open netrw in current directory' })
+
+-- Replace all occurrences of word under cursor
+vim.keymap.set('n', '<leader>r', ':%s/\\<<C-r><C-w>\\>/<C-r><C-w>/gI<Left><Left><Left>', { desc = '[R]eplace all occurrences' })
+
+-- Replace all occurrences of visual selection
+vim.keymap.set('v', '<leader>r', '"hy:%s/<C-r>h//gI<Left><Left><Left>', { desc = '[R]eplace all occurrences' })
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -175,7 +191,34 @@ vim.keymap.set('v', '>', '>gv', { desc = 'Indent and keep selection' })
 vim.keymap.set('v', '<', '<gv', { desc = 'Un-indent and keep selection' })
 vim.keymap.set('n', '<leader>bo', '<cmd>%bd|e#<cr>', { desc = 'Close other buffers' })
 vim.keymap.set('n', '<leader>Y', 'ggVGy', { desc = 'Copy entire buffer' })
-vim.keymap.set('n', '<leader>D', 'ggdG', { desc = 'Delete entire buffer' })
+vim.keymap.set('n', '<leader>D', 'gg"_dG', { desc = 'Delete entire buffer' })
+vim.keymap.set('n', '<leader>x', '"+dd', { desc = 'Cut line to clipboard' })
+vim.keymap.set('v', '<leader>x', '"+x', { desc = 'Cut selection to clipboard' })
+vim.keymap.set('n', '<leader>d', '"_dd', { desc = 'Delete line (no yank)' })
+vim.keymap.set('v', '<leader>d', '"_d', { desc = 'Delete selection (no yank)' })
+vim.keymap.set({ 'n', 'v' }, '<BS>', '"_dd', { desc = 'Delete line without yanking' })
+-- Close all buffers EXCEPT the current one
+vim.keymap.set('n', '<leader>bo', '<cmd>%bd|e#|bd#<cr>', { desc = 'Buffer Close Others' })
+-- Close ALL buffers
+vim.keymap.set('n', '<leader>ba', '<cmd>%bd<cr>', { desc = 'Buffer Close All' })
+
+-- Delete all occurrences of the current visual selection
+vim.keymap.set('v', '<leader>da', function()
+  vim.cmd 'normal! "vy'
+  local selection = vim.fn.getreg 'v'
+  selection = vim.fn.escape(selection, '/\\')
+  vim.cmd('%s/' .. selection .. '//g')
+end, { desc = '[D]elete [A]ll occurrences of visual selection' })
+
+vim.api.nvim_create_autocmd('BufWritePre', {
+  callback = function(event)
+    -- Skip Oil buffers completely
+    if vim.bo[event.buf].filetype == 'oil' then return end
+
+    local file = vim.loop.fs_realpath(event.match) or event.match
+    vim.fn.mkdir(vim.fn.fnamemodify(file, ':p:h'), 'p')
+  end,
+})
 
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
@@ -331,6 +374,14 @@ require('lazy').setup({
     },
     cmd = { 'CsvViewEnable', 'CsvViewDisable', 'CsvViewToggle' },
   },
+  {
+    'nvim-pack/nvim-spectre',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    keys = {
+      { '<leader>S', '<cmd>lua require("spectre").toggle()<CR>', desc = 'Toggle Spectre' },
+    },
+    opts = {},
+  },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -374,6 +425,18 @@ require('lazy').setup({
     'okuuva/auto-save.nvim',
     opts = {
       debounce_delay = 2000, -- save 2 seconds after you stop typing
+      condition = function(buf)
+        local filetype = vim.bo[buf].filetype
+        return filetype ~= 'oil'
+      end,
+    },
+  },
+  {
+    'stevearc/oil.nvim',
+    opts = {
+      delete_to_trash = true,
+      skip_confirm_for_simple_edits = true,
+      prompt_save_on_select_new_entry = false,
     },
   },
   -- NOTE: Plugins can specify dependencies.
@@ -964,8 +1027,10 @@ require('lazy').setup({
       --
       -- See :h blink-cmp-config-fuzzy for more information
       -- fuzzy = { implementation = 'lua' },
-      fuzzy = { implementation = 'lua', use_case_sensitive_sorting = false },
-
+      fuzzy = {
+        implementation = 'lua',
+        sorts = { 'score', 'sort_text' },
+      },
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
     },
@@ -1075,7 +1140,7 @@ require('lazy').setup({
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
       -- [[ RUST: added 'rust' parser for syntax highlighting ]]
-      local parsers = { 'elixir', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'rust', 'vim', 'vimdoc' }
+      local parsers = { 'elixir', 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'rust', 'vim', 'vimdoc', 'yaml' }
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
@@ -1101,6 +1166,42 @@ require('lazy').setup({
     end,
   },
 
+  { -- Treesitter-aware text objects (daf, yic, vak, etc.)
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    config = function()
+      require('nvim-treesitter-textobjects').setup {
+        select = {
+          enable = true,
+          lookahead = true, -- automatically jump forward to the next textobject
+          keymaps = {
+            ['af'] = '@function.outer',
+            ['if'] = '@function.inner',
+            ['ac'] = '@class.outer',
+            ['ic'] = '@class.inner',
+            ['aa'] = '@parameter.outer', -- aa = around argument
+            ['ia'] = '@parameter.inner',
+            ['ab'] = '@block.outer',
+            ['ib'] = '@block.inner',
+            ['ak'] = '@entry.outer', -- ak = around key (great for YAML)
+          },
+        },
+        move = {
+          enable = true,
+          set_jumps = true, -- adds to jumplist so you can use <C-o>/<C-i>
+          goto_next_start = {
+            [']f'] = '@function.outer',
+            [']c'] = '@class.outer',
+          },
+          goto_previous_start = {
+            ['[f'] = '@function.outer',
+            ['[c'] = '@class.outer',
+          },
+        },
+      }
+    end,
+  },
+
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -1116,6 +1217,27 @@ require('lazy').setup({
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
+
+  {
+    import = 'kickstart.plugins.neo-tree',
+    lazy = false,
+    opts = {
+      filesystem = {
+        follow_current_file = {
+          enabled = true,
+          leave_dirs_open = true,
+        },
+        filtered_items = {
+          visible = true, -- show hidden items but dimmed
+          hide_dotfiles = false,
+          hide_gitignored = false,
+          always_show_by_pattern = { -- uses glob style patterns
+            '.env*',
+          },
+        },
+      },
+    },
+  },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
