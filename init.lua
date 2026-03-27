@@ -176,13 +176,10 @@ vim.opt.cmdheight = 0
 --  See `:help vim.keymap.set()`
 
 vim.keymap.set({ 'n', 'i' }, '<C-\\>', '<cmd>e .<CR>', { desc = 'Open netrw in current directory' })
-
 -- Replace all occurrences of word under cursor
 vim.keymap.set('n', '<leader>r', ':%s/\\<<C-r><C-w>\\>/<C-r><C-w>/gI<Left><Left><Left>', { desc = '[R]eplace all occurrences' })
-
 -- Replace all occurrences of visual selection
 vim.keymap.set('v', '<leader>r', '"hy:%s/<C-r>h//gI<Left><Left><Left>', { desc = '[R]eplace all occurrences' })
-
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -202,6 +199,8 @@ vim.keymap.set('n', '<leader>bo', '<cmd>%bd|e#|bd#<cr>', { desc = 'Buffer Close 
 -- Close ALL buffers
 vim.keymap.set('n', '<leader>ba', '<cmd>%bd<cr>', { desc = 'Buffer Close All' })
 vim.keymap.set('n', '<S-w>', 'b', { desc = 'Move back a word' })
+vim.keymap.set('n', 'yw', 'yaw', { desc = 'Yank a word' })
+vim.keymap.set('n', 'cw', 'caw', { desc = 'Change a word' })
 
 -- Delete all occurrences of the current visual selection
 vim.keymap.set('v', '<leader>da', function()
@@ -543,6 +542,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '..', builtin.find_files, { desc = '[S]earch [F]iles' })
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
@@ -1306,6 +1306,3 @@ require('lazy').setup({
     },
   },
 })
-
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
