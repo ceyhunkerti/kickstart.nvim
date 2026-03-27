@@ -201,6 +201,7 @@ vim.keymap.set({ 'n', 'v' }, '<BS>', '"_dd', { desc = 'Delete line without yanki
 vim.keymap.set('n', '<leader>bo', '<cmd>%bd|e#|bd#<cr>', { desc = 'Buffer Close Others' })
 -- Close ALL buffers
 vim.keymap.set('n', '<leader>ba', '<cmd>%bd<cr>', { desc = 'Buffer Close All' })
+vim.keymap.set('n', '<S-w>', 'b', { desc = 'Move back a word' })
 
 -- Delete all occurrences of the current visual selection
 vim.keymap.set('v', '<leader>da', function()
@@ -1106,7 +1107,15 @@ require('lazy').setup({
       --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
       require('mini.ai').setup { n_lines = 500 }
+      require('mini.cursorword').setup()
 
+      -- Disable cursorword highlight during yank
+      vim.api.nvim_create_autocmd('TextYankPost', {
+        callback = function()
+          vim.g.minicursorword_disable = true
+          vim.defer_fn(function() vim.g.minicursorword_disable = false end, 300)
+        end,
+      })
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
@@ -1228,15 +1237,42 @@ require('lazy').setup({
           leave_dirs_open = true,
         },
         filtered_items = {
-          visible = true, -- show hidden items but dimmed
+          visible = true,
           hide_dotfiles = false,
           hide_gitignored = false,
-          always_show_by_pattern = { -- uses glob style patterns
+          always_show_by_pattern = {
             '.env*',
           },
         },
       },
     },
+  },
+
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    opts = function(_, opts)
+      opts.default_component_configs = opts.default_component_configs or {}
+      opts.default_component_configs.icon = opts.default_component_configs.icon or {}
+      opts.default_component_configs.icon.provider = function(icon, node, state)
+        if node.type == 'file' or node.type == 'terminal' then
+          local success, web_devicons = pcall(require, 'nvim-web-devicons')
+          local name = node.type == 'terminal' and 'terminal' or node.name
+          if name:match '^docker%-compose.*%.ya?ml$' then
+            name = 'docker-compose.yml'
+          elseif name:match '^%.env' then
+            name = '.env'
+          elseif name:match '^Dockerfile' then
+            name = 'Dockerfile'
+          end
+          if success then
+            local devicon, hl = web_devicons.get_icon(name)
+            icon.text = devicon or icon.text
+            icon.highlight = hl or icon.highlight
+          end
+        end
+      end
+      return opts
+    end,
   },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
