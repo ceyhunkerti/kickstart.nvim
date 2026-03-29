@@ -193,7 +193,6 @@ vim.keymap.set('n', '<leader>x', '"+dd', { desc = 'Cut line to clipboard' })
 vim.keymap.set('v', '<leader>x', '"+x', { desc = 'Cut selection to clipboard' })
 vim.keymap.set('n', '<leader>d', '"_dd', { desc = 'Delete line (no yank)' })
 vim.keymap.set('v', '<leader>d', '"_d', { desc = 'Delete selection (no yank)' })
-vim.keymap.set({ 'n', 'v' }, '<BS>', '"_dd', { desc = 'Delete line without yanking' })
 -- Close all buffers EXCEPT the current one
 vim.keymap.set('n', '<leader>bo', '<cmd>%bd|e#|bd#<cr>', { desc = 'Buffer Close Others' })
 -- Close ALL buffers
