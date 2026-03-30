@@ -172,6 +172,9 @@ vim.o.shortmess = vim.o.shortmess .. 'W'
 
 vim.opt.cmdheight = 0
 
+-- move cursor to the start/end of the line when wrapping
+vim.o.whichwrap = 'h,l,<,>,[,]'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -418,7 +421,11 @@ require('lazy').setup({
   },
   {
     'supermaven-inc/supermaven-nvim',
-    opts = {},
+    opts = {
+      keymaps = {
+        -- accept_suggestion = '<C-y>',
+      },
+    },
   },
   {
     'okuuva/auto-save.nvim',
@@ -1228,7 +1235,7 @@ require('lazy').setup({
 
   {
     import = 'kickstart.plugins.neo-tree',
-    lazy = false,
+    lazy = true,
     opts = {
       filesystem = {
         follow_current_file = {
