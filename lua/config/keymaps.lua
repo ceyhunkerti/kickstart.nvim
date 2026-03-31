@@ -134,8 +134,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 map('', '<leader>f', function() require('conform').format { async = true, lsp_format = 'fallback' } end, { desc = '[F]ormat buffer' })
 
 -- ── Git ──────────────────────────────────────────────────────────────────────
-map('n', '<leader>gg', '<cmd>LazyGit<cr>', { desc = 'LazyGit' })
-
+vim.keymap.set('n', '<leader>gg', function() require('neogit').open() end, { desc = 'Open Neogit' })
 -- ── File tree ────────────────────────────────────────────────────────────────
 map('n', '\\', '<cmd>Neotree toggle<cr>', { desc = 'Toggle Neo-tree' })
 
