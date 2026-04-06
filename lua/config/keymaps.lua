@@ -8,6 +8,16 @@ local map = vim.keymap.set
 map('n', '<Esc>', '<cmd>nohlsearch<CR>')
 map({ 'n', 'i' }, '<C-\\>', '<cmd>e .<CR>', { desc = 'Open netrw in current directory' })
 
+vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv", { desc = 'Move selection down' })
+vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv", { desc = 'Move selection up' })
+
+vim.keymap.set('n', '<A-j>', ':m .+1<CR>==', { desc = 'Move line down' })
+vim.keymap.set('n', '<A-k>', ':m .-2<CR>==', { desc = 'Move line up' })
+
+-- Navigation ------------------------------------------------------------------
+vim.keymap.set({ 'n', 'v', 'o' }, '<C-,>', '^', { desc = 'Go to first non-blank character' })
+vim.keymap.set({ 'n', 'v', 'o' }, '<C-.>', '$', { desc = 'Go to last non-blank character' })
+
 -- ── Window navigation ────────────────────────────────────────────────────────
 map('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 map('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
@@ -26,14 +36,15 @@ map('n', 'cw', 'caw', { desc = 'Change a word' })
 map('i', '<C-d>', '<Esc>_ddi', { noremap = true, desc = 'Delete line in insert mode' })
 map('n', 'dw', 'daw', { desc = 'Delete a word' })
 
+-- ── Commenting with Treesitter ──────────────────────────────────────────────
 -- ── Clipboard ────────────────────────────────────────────────────────────────
 map('n', '<leader>x', '"+dd', { desc = 'Cut line to clipboard' })
 map('v', '<leader>x', '"+x', { desc = 'Cut selection to clipboard' })
 map('n', '<leader>Y', 'ggVGy', { desc = 'Copy entire buffer' })
 
 -- ── Delete without yanking ───────────────────────────────────────────────────
-map('n', '<leader>d', '"_dd', { desc = 'Delete line (no yank)' })
-map('v', '<leader>d', '"_d', { desc = 'Delete selection (no yank)' })
+map('n', 'dx', '"_dd', { desc = 'Delete line (no yank)' })
+map('v', 'dx', '"_d', { desc = 'Delete selection (no yank)' })
 map('n', '<leader>D', 'gg"_dG', { desc = 'Delete entire buffer (no yank)' })
 
 -- ── Buffer management ────────────────────────────────────────────────────────
@@ -85,10 +96,13 @@ vim.defer_fn(function()
   map('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
   map('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
   map('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
-  map('n', '..', builtin.find_files, { desc = '[S]earch [F]iles (shortcut)' })
   map('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
   map({ 'n', 'v' }, '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-  map('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+  map('n', '<leader>sg', function()
+    builtin.live_grep {
+      additional_args = { '--fixed-strings' },
+    }
+  end, { desc = '[S]earch by [G]rep' })
   map('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
   map('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
   map('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files' })
@@ -154,14 +168,6 @@ map('n', '<leader>do', function() require('dap').step_out() end, { desc = '[D]eb
 map('n', '<leader>du', function() require('dapui').toggle() end, { desc = '[D]ebug [U]I toggle' })
 map('n', '<leader>dq', function() require('dap').terminate() end, { desc = '[D]ebug [Q]uit' })
 
--- Tmux navigation -------------------------------------------------------------
-vim.keymap.set('n', '<c-h>', ':TmuxNavigateLeft<cr>', { silent = true })
-vim.keymap.set('n', '<c-j>', ':TmuxNavigateDown<cr>', { silent = true })
-vim.keymap.set('n', '<c-k>', ':TmuxNavigateUp<cr>', { silent = true })
-vim.keymap.set('n', '<c-l>', ':TmuxNavigateRight<cr>', { silent = true })
-
--- Vimux -----------------------------------------------------------------------
--- Keymap to open a prompt for a command to run in a tmux pane
-vim.keymap.set('n', '<leader>vp', ':VimuxPromptCommand<CR>')
--- Keymap to close the Vimux runner pane
-vim.keymap.set('n', '<leader>vi', ':VimuxInspectRunner<CR>')
+-- ── Multi Cursor ─────────────────────────────────────────────────────────────
+map({ 'n', 'v' }, '<c-d>', function() require('multicursor-nvim').matchAllAddCursors() end, { desc = 'Multi cursor add all matches' })
+map('n', '<c-q>', function() require('multicursor-nvim').clearCursors() end, { desc = 'Multi cursor clear' })

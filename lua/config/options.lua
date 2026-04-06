@@ -24,6 +24,7 @@ vim.o.laststatus = 3 -- global statusline
 vim.o.report = 9999
 vim.o.shortmess = vim.o.shortmess .. 'W'
 vim.o.whichwrap = 'h,l,<,>,[,]'
+vim.o.wrap = false
 
 vim.opt.cmdheight = 0
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }

@@ -54,11 +54,12 @@ require('neo-tree').setup {
   filesystem = {
     follow_current_file = { enabled = true, leave_dirs_open = true },
     filtered_items = {
-      visible =false,
+      visible = false,
       hide_dotfiles = true,
       hide_gitignored = false,
       always_show_by_pattern = { '.env*' },
       hide_by_name = { 'node_modules', 'venv', '.venv' },
+      never_show_by_pattern = { '*.pyc', '*.pyo', '*/__pycache__' },
     },
   },
   default_component_configs = {
@@ -82,10 +83,3 @@ require('neo-tree').setup {
     },
   },
 }
-
-vim.pack.add { 'https://github.com/christoomey/vim-tmux-navigator' }
--- No specific .setup{} is required for this plugin,
--- but we define the keys to ensure they match tmux
-vim.g.tmux_navigator_no_mappings = 1
-
-vim.pack.add { 'https://github.com/preservim/vimux' }

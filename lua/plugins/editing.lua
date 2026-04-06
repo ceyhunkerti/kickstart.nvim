@@ -3,13 +3,19 @@
 --   mini.ai, mini.surround, mini.statusline, mini.cursorword
 --   guess-indent
 -- =============================================================================
+-- multi-cursor ---------------------------------------------------------------
+vim.pack.add { 'https://github.com/mg979/vim-visual-multi' }
+vim.pack.add { 'https://github.com/jake-stewart/multicursor.nvim' }
+require('multicursor-nvim').setup {}
 
 -- ── guess-indent ─────────────────────────────────────────────────────────────
-vim.pack.add({ 'https://github.com/NMAC427/guess-indent.nvim' })
+vim.pack.add { 'https://github.com/NMAC427/guess-indent.nvim' }
 require('guess-indent').setup {}
 
 -- ── mini.nvim ────────────────────────────────────────────────────────────────
-vim.pack.add({ 'https://github.com/nvim-mini/mini.nvim' })
+vim.pack.add { 'https://github.com/nvim-mini/mini.nvim' }
+-- Autopairs
+require('mini.pairs').setup {}
 
 -- Better Around/Inside textobjects: va), yinq, ci', …
 require('mini.ai').setup { n_lines = 500 }
