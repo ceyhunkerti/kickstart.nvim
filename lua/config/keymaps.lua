@@ -33,7 +33,6 @@ map('v', '<', '<gv', { desc = 'Un-indent and keep selection' })
 map('n', '<S-w>', 'b', { desc = 'Move back a word' })
 map('n', 'yw', 'yaw', { desc = 'Yank a word' })
 map('n', 'cw', 'caw', { desc = 'Change a word' })
-map('i', '<C-d>', '<Esc>_ddi', { noremap = true, desc = 'Delete line in insert mode' })
 map('n', 'dw', 'daw', { desc = 'Delete a word' })
 
 -- ── Commenting with Treesitter ──────────────────────────────────────────────
@@ -169,5 +168,5 @@ map('n', '<leader>du', function() require('dapui').toggle() end, { desc = '[D]eb
 map('n', '<leader>dq', function() require('dap').terminate() end, { desc = '[D]ebug [Q]uit' })
 
 -- ── Multi Cursor ─────────────────────────────────────────────────────────────
-map({ 'n', 'v' }, '<c-d>', function() require('multicursor-nvim').matchAllAddCursors() end, { desc = 'Multi cursor add all matches' })
+map({ 'v' }, '<c-d>', function() require('multicursor-nvim').matchAllAddCursors() end, { desc = 'Multi cursor add all matches' })
 map('n', '<c-q>', function() require('multicursor-nvim').clearCursors() end, { desc = 'Multi cursor clear' })

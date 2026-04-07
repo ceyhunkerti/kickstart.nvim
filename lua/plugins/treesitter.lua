@@ -16,6 +16,7 @@ local parsers = {
   'html',
   'rust',
   'go',
+  'groovy',
   'java',
   'javascript',
   'python',
