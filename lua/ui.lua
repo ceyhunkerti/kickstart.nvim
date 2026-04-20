@@ -74,15 +74,6 @@ require('lualine').setup {
   },
 }
 
-vim.pack.add { 'https://github.com/stevearc/oil.nvim' }
-require('oil').setup {
-  delete_to_trash = true,
-  skip_confirm_for_simple_edits = true,
-  prompt_save_on_select_new_entry = false,
-}
-
-
-
 vim.pack.add {
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-neo-tree/neo-tree.nvim',

@@ -93,7 +93,29 @@ vim.api.nvim_create_autocmd('LspAttach', {
     lmap('grn', vim.lsp.buf.rename, '[R]e[n]ame')
     lmap('gra', vim.lsp.buf.code_action, 'Code [A]ction')
     lmap('grD', vim.lsp.buf.declaration, '[D]eclaration')
-    lmap('K', vim.lsp.buf.hover, 'Hover')
+    -- lmap('K', vim.lsp.buf.hover, 'Hover')
+
+    -- Hover with floating window
+    lmap('K', function()
+      vim.lsp.buf.hover {
+        border = 'rounded',
+        max_width = 80,
+        max_height = 30,
+      }
+    end, 'Hover')
+
+    -- Signature help with floating window
+    lmap(
+      '<C-k>',
+      function()
+        vim.lsp.buf.signature_help {
+          border = 'rounded',
+          max_width = 80,
+          max_height = 30,
+        }
+      end,
+      'Signature Help'
+    )
 
     vim.keymap.set({ 'n', 'x' }, 'gra', vim.lsp.buf.code_action, { buffer = event.buf, desc = 'LSP: Code Action' })
 
@@ -104,48 +126,47 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
--- Telescope LSP pickers (buffer-local)
+-- FZF -------------------------------------------------------------------------
+vim.defer_fn(function()
+  local fzf = require 'fzf-lua'
+
+  -- Files
+  map('n', '<leader>sf', fzf.files, { desc = '[S]earch [F]iles' })
+  map('n', '<leader>sn', function() fzf.files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
+
+  -- Search
+  map('n', '<leader>sg', fzf.live_grep, { desc = '[S]earch by [G]rep' })
+  map({ 'n', 'v' }, '<leader>sw', fzf.grep_cword, { desc = '[S]earch [W]ord' })
+  map('n', '<leader>sd', fzf.diagnostics_document, { desc = '[S]earch [D]iagnostics' })
+
+  -- Buffers and history
+  map('n', '<leader><leader>', fzf.buffers, { desc = 'Find buffers' })
+  map('n', '<leader>s.', fzf.oldfiles, { desc = '[S]earch Recent Files' })
+
+  -- Help and commands
+  map('n', '<leader>sh', fzf.helptags, { desc = '[S]earch [H]elp' })
+  map('n', '<leader>sk', fzf.keymaps, { desc = '[S]earch [K]eymaps' })
+  map('n', '<leader>sc', fzf.commands, { desc = '[S]earch [C]ommands' })
+
+  -- Buffer search
+  map('n', '<leader>/', fzf.lines, { desc = 'Fuzzy search in buffer' })
+  map('n', '<leader>s/', function() fzf.live_grep { rg_opts = '--multiline' } end, { desc = 'Search in open files' })
+end, 500)
+
+-- LSP pickers
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('keymaps-telescope-lsp', { clear = true }),
+  group = vim.api.nvim_create_augroup('keymaps-fzf-lsp', { clear = true }),
   callback = function(event)
-    local ok, builtin = pcall(require, 'telescope.builtin')
-    if not ok then return end
+    local fzf = require 'fzf-lua'
     local buf = event.buf
-    map('n', 'grr', builtin.lsp_references, { buffer = buf, desc = '[G]oto [R]eferences' })
-    map('n', 'gri', builtin.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
-    map('n', 'grd', builtin.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
-    map('n', 'grt', builtin.lsp_type_definitions, { buffer = buf, desc = '[G]oto [T]ype Definition' })
-    map('n', 'gO', builtin.lsp_document_symbols, { buffer = buf, desc = 'Document Symbols' })
-    map('n', 'gW', builtin.lsp_dynamic_workspace_symbols, { buffer = buf, desc = 'Workspace Symbols' })
+    map('n', 'grr', fzf.lsp_references, { buffer = buf, desc = '[G]oto [R]eferences' })
+    map('n', 'gri', fzf.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
+    map('n', 'grd', fzf.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
+    map('n', 'grt', fzf.lsp_typedefs, { buffer = buf, desc = '[G]oto [T]ype Definition' })
+    map('n', 'gro', fzf.lsp_document_symbols, { buffer = buf, desc = 'Document Symbols' })
+    map('n', 'gW', fzf.lsp_live_workspace_symbols, { buffer = buf, desc = 'Workspace Symbols' })
   end,
 })
-
--- ── Telescope ────────────────────────────────────────────────────────────────
-vim.defer_fn(function()
-  local ok, builtin = pcall(require, 'telescope.builtin')
-  if not ok then return end
-
-  map('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
-  map('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-  map('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
-  map('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect' })
-  map({ 'n', 'v' }, '<leader>sw', builtin.grep_string, { desc = '[S]earch [W]ord' })
-  map('n', '<leader>sg', function() builtin.live_grep { additional_args = { '--fixed-strings' } } end, { desc = '[S]earch by [G]rep' })
-  map('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-  map('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-  map('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files' })
-  map('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
-  map('n', '<leader><leader>', builtin.buffers, { desc = 'Find buffers' })
-  map('n', '<leader>sF', function() builtin.find_files { cwd = '/', hidden = true } end, { desc = '[S]earch [F]iles from root' })
-  map('n', '<leader>sn', function() builtin.find_files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
-  map('n', '<leader>/', function() builtin.current_buffer_fuzzy_find { winblend = 10, previewer = false } end, { desc = 'Fuzzy search in buffer' })
-  map(
-    'n',
-    '<leader>s/',
-    function() builtin.live_grep { grep_open_files = true, prompt_title = 'Live Grep in Open Files' } end,
-    { desc = 'Search in open files' }
-  )
-end, 0)
 
 -- ── Git ──────────────────────────────────────────────────────────────────────
 map('n', '<leader>gg', function() require('neogit').open() end, { desc = 'Open Neogit' })

@@ -6,12 +6,12 @@ vim.pack.add {
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/mason-org/mason-lspconfig.nvim',
   'https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim',
-  'https://github.com/j-hui/fidget.nvim',
+  -- 'https://github.com/j-hui/fidget.nvim',
   'https://github.com/neovim/nvim-lspconfig',
 }
 
 require('mason').setup {}
-require('fidget').setup {}
+-- require('fidget').setup {}
 
 -- Document highlight on cursor hold (not a keymap, stays here)
 vim.api.nvim_create_autocmd('LspAttach', {

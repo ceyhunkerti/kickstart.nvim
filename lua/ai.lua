@@ -5,3 +5,4 @@ require('supermaven-nvim').setup {
     clear_suggestion = '<M-d>',
   },
 }
+
