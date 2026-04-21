@@ -6,14 +6,12 @@ vim.pack.add {
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/mason-org/mason-lspconfig.nvim',
   'https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim',
-  -- 'https://github.com/j-hui/fidget.nvim',
   'https://github.com/neovim/nvim-lspconfig',
 }
 
 require('mason').setup {}
--- require('fidget').setup {}
 
--- Document highlight on cursor hold (not a keymap, stays here)
+-- Document highlight on cursor hold
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
   callback = function(event)
@@ -44,7 +42,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
 ---@type table<string, vim.lsp.Config>
 local servers = {
   elixirls = {},
-  stylua = {},
   rust_analyzer = {},
   lua_ls = {
     on_init = function(client)
@@ -64,16 +61,36 @@ local servers = {
   },
   ruff = {},
   pyright = {},
+  ts_ls = {
+    -- Explicitly handle JS/TS files
+    filetypes = { 'javascript', 'javascriptreact', 'javascript.jsx', 'typescript', 'typescriptreact', 'typescript.tsx' },
+    settings = {
+      javascript = {
+        suggest = { completeFunctionCalls = true },
+        inlayHints = { includeInlayParameterNameHints = 'all' },
+      },
+    },
+  },
 }
 
+-- 1. Setup Mason Tool Installer
 local mason_ensure = vim.tbl_filter(function(n) return n ~= 'rust_analyzer' end, vim.tbl_keys(servers))
 require('mason-tool-installer').setup { ensure_installed = mason_ensure }
 
-for name, config in pairs(servers) do
-  vim.lsp.config(name, config)
-  vim.lsp.enable(name)
-end
+-- 2. Setup Mason-LSPConfig to bridge Mason and Lspconfig
+-- This is the "standard" way to ensure servers are configured as they are installed
+require('mason-lspconfig').setup {
+  handlers = {
+    function(server_name)
+      local server_config = servers[server_name] or {}
+      -- This line replaces vim.lsp.enable and vim.lsp.config
+      -- It properly registers the :LspInfo command and handles root_dir
+      require('lspconfig')[server_name].setup(server_config)
+    end,
+  },
+}
 
+-- Conform (Formatting)
 vim.pack.add { 'https://github.com/stevearc/conform.nvim' }
 require('conform').setup {
   notify_on_error = false,
