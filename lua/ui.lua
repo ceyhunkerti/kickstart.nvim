@@ -77,8 +77,10 @@ require('lualine').setup {
 vim.pack.add {
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-neo-tree/neo-tree.nvim',
+  'https://github.com/folke/snacks.nvim',
 }
 require('neo-tree').setup {
+  hide_root_node = true,
   filesystem = {
     follow_current_file = { enabled = true, leave_dirs_open = true },
     filtered_items = {
@@ -88,8 +90,58 @@ require('neo-tree').setup {
       always_show_by_pattern = { '.env*' },
       hide_by_name = { 'node_modules', 'venv', '.venv' },
       never_show_by_pattern = { '*.pyc', '*.pyo', '*/__pycache__' },
+      hide_root_node = true,
+    },
+  },
+  window = {
+    mappings = {
+      ['Y'] = function(state)
+        local node = state.tree:get_node()
+        if not node or not node.id then
+          vim.notify('No node selected.', vim.log.levels.WARN)
+          return
+        end
+
+        if vim.fn.has 'clipboard' == 0 then
+          vim.notify('System clipboard is not available.', vim.log.levels.ERROR)
+          return
+        end
+
+        local filepath = node:get_id()
+        local filename = node.name
+        local modify = vim.fn.fnamemodify
+
+        local choices = {
+          { label = 'Absolute path', value = filepath },
+          { label = 'Path relative to CWD', value = modify(filepath, ':.') },
+          { label = 'Path relative to HOME', value = modify(filepath, ':~') },
+          { label = 'Filename', value = filename },
+          { label = 'Filename without extension', value = modify(filename, ':r') },
+          { label = 'Extension of the filename', value = modify(filename, ':e') },
+        }
+
+        require('snacks').picker.select(choices, {
+          prompt = 'Choose to copy to clipboard:',
+          format_item = function(item) return string.format('%-30s %s', item.label, item.value) end,
+        }, function(choice)
+          if not choice then
+            vim.notify('Copy cancelled.', vim.log.levels.INFO)
+            return
+          end
+
+          vim.fn.setreg('+', choice.value)
+          vim.notify('Copied to clipboard: ' .. choice.value)
+        end)
+      end,
     },
   },
 }
 
+vim.pack.add({
+  { src = 'https://github.com/brenoprata10/nvim-highlight-colors', opt = false },
+})
+
+require('nvim-highlight-colors').setup({
+  render = 'background', -- or 'foreground'
+})
 -- require('vim._core.ui2').enable {}

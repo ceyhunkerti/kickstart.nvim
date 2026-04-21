@@ -2,6 +2,7 @@
 -- lua/fzf.lua — fzf picker
 -- =============================================================================
 
+
 vim.pack.add {
   'https://github.com/ibhagwan/fzf-lua',
 }
@@ -25,7 +26,7 @@ vim.defer_fn(function()
     },
     fzf_opts = {
       ['--layout'] = 'reverse',
-      ['--height'] = '20%',
+      --  ['--height'] = '20%',
     },
   }
 
