@@ -140,43 +140,37 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 -- FZF -------------------------------------------------------------------------
 vim.defer_fn(function()
-  local fzf = require 'fzf-lua'
-
+  local snacks = require 'snacks'
   -- Files
-  map('n', '<leader>sf', fzf.files, { desc = '[S]earch [F]iles' })
-  map('n', '<leader>sn', function() fzf.files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
-
+  map('n', '<leader>sf', snacks.picker.files, { desc = '[S]earch [F]iles' })
+  map('n', '<leader>sn', function() snacks.picker.files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
   -- Search
-  map('n', '<leader>sg', fzf.live_grep, { desc = '[S]earch by [G]rep' })
-  map({ 'n', 'v' }, '<leader>sw', fzf.grep_cword, { desc = '[S]earch [W]ord' })
-  map('n', '<leader>sd', fzf.diagnostics_document, { desc = '[S]earch [D]iagnostics' })
-
+  map('n', '<leader>sg', snacks.picker.grep, { desc = '[S]earch by [G]rep' })
+  map({ 'n', 'v' }, '<leader>sw', snacks.picker.grep_word, { desc = '[S]earch [W]ord' })
+  map('n', '<leader>sd', snacks.picker.diagnostics, { desc = '[S]earch [D]iagnostics' })
+  map('n', '<leader><leader>', snacks.picker.buffers, { desc = 'Find buffers' })
   -- Buffers and history
-  map('n', '<leader><leader>', fzf.buffers, { desc = 'Find buffers' })
-  map('n', '<leader>s.', fzf.oldfiles, { desc = '[S]earch Recent Files' })
-
+  map('n', '<leader>s.', snacks.picker.recent, { desc = '[S]earch Recent Files' })
   -- Help and commands
-  map('n', '<leader>sh', fzf.helptags, { desc = '[S]earch [H]elp' })
-  map('n', '<leader>sk', fzf.keymaps, { desc = '[S]earch [K]eymaps' })
-  map('n', '<leader>sc', fzf.commands, { desc = '[S]earch [C]ommands' })
-
+  map('n', '<leader>sh', snacks.picker.help, { desc = '[S]earch [H]elp' })
+  map('n', '<leader>sk', snacks.picker.keymaps, { desc = '[S]earch [K]eymaps' })
+  map('n', '<leader>sc', snacks.picker.commands, { desc = '[S]earch [C]ommands' })
   -- Buffer search
-  map('n', '<leader>/', fzf.lines, { desc = 'Fuzzy search in buffer' })
-  map('n', '<leader>s/', function() fzf.live_grep { rg_opts = '--multiline' } end, { desc = 'Search in open files' })
+  map('n', '<leader>/', snacks.picker.lines, { desc = 'Fuzzy search in buffer' })
+  map('n', '<leader>s/', snacks.picker.grep, { desc = 'Search in open files' })
 end, 500)
-
 -- LSP pickers
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('keymaps-fzf-lsp', { clear = true }),
+  group = vim.api.nvim_create_augroup('keymaps-snacks-lsp', { clear = true }),
   callback = function(event)
-    local fzf = require 'fzf-lua'
+    local snacks = require 'snacks'
     local buf = event.buf
-    map('n', 'grr', fzf.lsp_references, { buffer = buf, desc = '[G]oto [R]eferences' })
-    map('n', 'gri', fzf.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
-    map('n', 'grd', fzf.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
-    map('n', 'grt', fzf.lsp_typedefs, { buffer = buf, desc = '[G]oto [T]ype Definition' })
-    map('n', 'gro', fzf.lsp_document_symbols, { buffer = buf, desc = 'Document Symbols' })
-    map('n', 'gW', fzf.lsp_live_workspace_symbols, { buffer = buf, desc = 'Workspace Symbols' })
+    map('n', 'grr', snacks.picker.lsp_references, { buffer = buf, desc = '[G]oto [R]eferences' })
+    map('n', 'gri', snacks.picker.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
+    map('n', 'grd', snacks.picker.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
+    map('n', 'grt', snacks.picker.lsp_typedefs, { buffer = buf, desc = '[G]oto [T]ype Definition' })
+    map('n', 'gro', snacks.picker.lsp_document_symbols, { buffer = buf, desc = 'Document Symbols' })
+    map('n', 'gW', snacks.picker.lsp_workspace_symbols, { buffer = buf, desc = 'Workspace Symbols' })
   end,
 })
 
