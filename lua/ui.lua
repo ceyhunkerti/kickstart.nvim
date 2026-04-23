@@ -68,6 +68,7 @@ require('lualine').setup {
       {
         'buffers',
         max_length = vim.o.columns, -- use full width
+        cond = function() return vim.bo.filetype ~= 'neo-tree' end,
       },
     },
     lualine_z = {},
@@ -137,11 +138,11 @@ require('neo-tree').setup {
   },
 }
 
-vim.pack.add({
+vim.pack.add {
   { src = 'https://github.com/brenoprata10/nvim-highlight-colors', opt = false },
-})
+}
 
-require('nvim-highlight-colors').setup({
+require('nvim-highlight-colors').setup {
   render = 'background', -- or 'foreground'
-})
+}
 -- require('vim._core.ui2').enable {}

@@ -4,6 +4,8 @@
 
 local map = vim.keymap.set
 
+local ui_utils = require 'utils.ui'
+
 -- ── General ──────────────────────────────────────────────────────────────────
 map('n', '<Esc>', function()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -33,8 +35,18 @@ map({ 'n', 'i' }, '<C-q>', function()
   vim.api.nvim_buf_delete(current, {})
 end, { desc = 'Delete buffer' })
 map('n', '<leader>tb', function() vim.o.showtabline = vim.o.showtabline == 0 and 2 or 0 end, { desc = 'Toggle buffer tabline' })
-map('n', '<leader>bo', '<cmd>%bd|e#|bd#<cr>', { desc = 'Close other buffers' })
-map('n', '<leader>ba', '<cmd>%bd<cr>', { desc = 'Close all buffers' })
+
+map('n', '<leader>bo', ui_utils.close_other_buffers, {
+  noremap = true,
+  silent = true,
+  desc = 'Close all other buffers (preserve special windows)',
+})
+
+map('n', '<leader>ba', ui_utils.close_all_buffers, {
+  noremap = true,
+  silent = true,
+  desc = 'Close all buffers (preserve special windows)',
+})
 
 -- Window navigation
 map('n', '<C-h>', '<C-w><C-h>', { desc = 'Move to left window' })
