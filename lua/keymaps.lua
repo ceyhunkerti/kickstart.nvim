@@ -165,15 +165,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(event)
     local snacks = require 'snacks'
     local buf = event.buf
-    map('n', 'grr', snacks.picker.lsp_references, { buffer = buf, desc = '[G]oto [R]eferences' })
-    map('n', 'gri', snacks.picker.lsp_implementations, { buffer = buf, desc = '[G]oto [I]mplementation' })
-    map('n', 'grd', snacks.picker.lsp_definitions, { buffer = buf, desc = '[G]oto [D]efinition' })
-    map('n', 'grt', snacks.picker.lsp_typedefs, { buffer = buf, desc = '[G]oto [T]ype Definition' })
-    map('n', 'gro', snacks.picker.lsp_document_symbols, { buffer = buf, desc = 'Document Symbols' })
-    map('n', 'gW', snacks.picker.lsp_workspace_symbols, { buffer = buf, desc = 'Workspace Symbols' })
+    map('n', 'grr', function() snacks.picker.lsp_references() end, { buffer = buf, desc = '[G]oto [R]eferences' })
+    map('n', 'gri', function() snacks.picker.lsp_implementations() end, { buffer = buf, desc = '[G]oto [I]mplementation' })
+    map('n', 'grd', function() snacks.picker.lsp_definitions() end, { buffer = buf, desc = '[G]oto [D]efinition' })
+    map('n', 'grt', function() snacks.picker.lsp_typedefs() end, { buffer = buf, desc = '[G]oto [T]ype Definition' })
+    map('n', 'gro', function() snacks.picker.lsp_symbols() end, { buffer = buf, desc = 'Document Symbols' })
+    map('n', 'gW', function() snacks.picker.lsp_symbols { workspace = true } end, { buffer = buf, desc = 'Workspace Symbols' })
   end,
 })
-
 -- ── Git ──────────────────────────────────────────────────────────────────────
 map('n', '<leader>gg', function() require('neogit').open() end, { desc = 'Open Neogit' })
 
