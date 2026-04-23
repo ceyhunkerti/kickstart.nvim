@@ -5,7 +5,6 @@
 -- ── gruvbox-material ─────────────────────────────────────────────────────────
 vim.pack.add { 'https://github.com/nvim-lua/plenary.nvim' }
 vim.pack.add { 'https://github.com/sainnhe/gruvbox-material' }
-
 vim.g.gruvbox_material_enable_italic = 0
 vim.g.gruvbox_material_disable_italic_comment = 1
 vim.g.gruvbox_material_background = 'medium'
@@ -79,6 +78,7 @@ vim.pack.add {
   'https://github.com/nvim-neo-tree/neo-tree.nvim',
   'https://github.com/folke/snacks.nvim',
 }
+
 require('neo-tree').setup {
   hide_root_node = true,
   filesystem = {
@@ -144,4 +144,5 @@ vim.pack.add {
 require('nvim-highlight-colors').setup {
   render = 'background', -- or 'foreground'
 }
+
 -- require('vim._core.ui2').enable {}

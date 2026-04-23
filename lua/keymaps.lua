@@ -48,11 +48,18 @@ map('n', '<leader>ba', ui_utils.close_all_buffers, {
   desc = 'Close all buffers (preserve special windows)',
 })
 
+map({ 'n' }, '<C-x>', ':bprevious<CR>:bd #<CR>', {
+  noremap = true,
+  silent = true,
+  desc = 'Close buffer and switch to previous',
+})
 -- Window navigation
 map('n', '<C-h>', '<C-w><C-h>', { desc = 'Move to left window' })
 map('n', '<C-l>', '<C-w><C-l>', { desc = 'Move to right window' })
 map('n', '<C-j>', '<C-w><C-j>', { desc = 'Move to lower window' })
 map('n', '<C-k>', '<C-w><C-k>', { desc = 'Move to upper window' })
+
+map('n', '<leader>w', '<cmd>lua require("window-picker").pick_window()<cr>', { desc = 'Pick window' })
 
 -- ── Editing ──────────────────────────────────────────────────────────────────
 map('v', '>', '>gv', { desc = 'Indent and keep selection' })
@@ -96,17 +103,17 @@ map('n', '<leader>e', function() vim.diagnostic.open_float(nil, { focus = false 
 map('n', '<leader>E', function()
   local line = vim.api.nvim_win_get_cursor(0)[1] - 1
   local diagnostics = vim.diagnostic.get(0, { lnum = line })
-  
+
   if #diagnostics == 0 then
     vim.notify('No diagnostics on this line', vim.log.levels.INFO)
     return
   end
-  
+
   local text = {}
   for _, diag in ipairs(diagnostics) do
     table.insert(text, diag.message)
   end
-  
+
   vim.fn.setreg('+', table.concat(text, '\n'))
   vim.notify('Diagnostic copied to clipboard', vim.log.levels.INFO)
 end, { desc = 'Copy diagnostic under cursor' })
@@ -116,7 +123,6 @@ map('n', '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', { des
 map('n', '<leader>cs', '<cmd>Trouble symbols toggle focus=false<cr>', { desc = 'Trouble symbols' })
 map('n', '<leader>cl', '<cmd>Trouble lsp toggle focus=false<cr>', { desc = 'Trouble LSP' })
 map('n', '<leader>xq', '<cmd>Trouble quickfix toggle<cr>', { desc = 'Trouble quickfix' })
-
 
 -- LSP keymaps (buffer-local, on LspAttach)
 vim.api.nvim_create_autocmd('LspAttach', {

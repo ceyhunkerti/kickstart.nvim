@@ -132,6 +132,10 @@
       "rev": "d7462543c9e366c0d196c7f67a945eaaf5d99414",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
+    "nvim-window-picker": {
+      "rev": "6382540b2ae5de6c793d4aa2e3fe6dbb518505ec",
+      "src": "https://github.com/s1n7ax/nvim-window-picker"
+    },
     "oil.nvim": {
       "rev": "0fcc83805ad11cf714a949c98c605ed717e0b83e",
       "src": "https://github.com/stevearc/oil.nvim"
