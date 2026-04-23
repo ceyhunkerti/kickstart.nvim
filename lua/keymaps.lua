@@ -92,11 +92,32 @@ map('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 -- ── LSP & Diagnostics ───────────────────────────────────────────────────────
 map('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic quickfix' })
 map('n', '<leader>e', function() vim.diagnostic.open_float(nil, { focus = false }) end, { desc = 'Show diagnostic float' })
+
+map('n', '<leader>E', function()
+  local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local diagnostics = vim.diagnostic.get(0, { lnum = line })
+  
+  if #diagnostics == 0 then
+    vim.notify('No diagnostics on this line', vim.log.levels.INFO)
+    return
+  end
+  
+  local text = {}
+  for _, diag in ipairs(diagnostics) do
+    table.insert(text, diag.message)
+  end
+  
+  vim.fn.setreg('+', table.concat(text, '\n'))
+  vim.notify('Diagnostic copied to clipboard', vim.log.levels.INFO)
+end, { desc = 'Copy diagnostic under cursor' })
+
 map('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<cr>', { desc = 'Toggle Trouble diagnostics' })
 map('n', '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', { desc = 'Trouble workspace diagnostics' })
 map('n', '<leader>cs', '<cmd>Trouble symbols toggle focus=false<cr>', { desc = 'Trouble symbols' })
 map('n', '<leader>cl', '<cmd>Trouble lsp toggle focus=false<cr>', { desc = 'Trouble LSP' })
 map('n', '<leader>xq', '<cmd>Trouble quickfix toggle<cr>', { desc = 'Trouble quickfix' })
+
+
 -- LSP keymaps (buffer-local, on LspAttach)
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('keymaps-lsp-attach', { clear = true }),
