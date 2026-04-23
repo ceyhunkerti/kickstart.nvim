@@ -68,7 +68,6 @@ require('lualine').setup {
       {
         'buffers',
         max_length = vim.o.columns, -- use full width
-        cond = function() return vim.bo.filetype ~= 'neo-tree' end,
       },
     },
     lualine_z = {},
