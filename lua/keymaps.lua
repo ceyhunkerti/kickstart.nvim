@@ -175,7 +175,12 @@ vim.defer_fn(function()
   map('n', '<leader>sg', snacks.picker.grep, { desc = '[S]earch by [G]rep' })
   map({ 'n', 'v' }, '<leader>sw', snacks.picker.grep_word, { desc = '[S]earch [W]ord' })
   map('n', '<leader>sd', snacks.picker.diagnostics, { desc = '[S]earch [D]iagnostics' })
-  map('n', '<leader><leader>', snacks.picker.buffers, { desc = 'Find buffers' })
+  map('n', '<leader><leader>', function()
+    snacks.picker.buffers {
+      preview = { enabled = true },
+    }
+  end, { desc = 'Find buffers' })
+
   -- Buffers and history
   map('n', '<leader>s.', snacks.picker.recent, { desc = '[S]earch Recent Files' })
   -- Help and commands
