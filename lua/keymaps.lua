@@ -165,7 +165,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
--- FZF -------------------------------------------------------------------------
+-- Pickers -------------------------------------------------------------------------
 vim.defer_fn(function()
   local snacks = require 'snacks'
   -- Files
