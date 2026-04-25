@@ -10,6 +10,8 @@ vim.g.maplocalleader = ' '
 
 -- Nerd Font flag — flip to true if your terminal uses a Nerd Font
 vim.g.have_nerd_font = true
+vim.cmd 'syntax on'
+vim.cmd 'filetype plugin indent on'
 
 require 'options'
 require 'ui'

@@ -78,7 +78,12 @@ vim.pack.add {
   'https://github.com/nvim-neo-tree/neo-tree.nvim',
   'https://github.com/folke/snacks.nvim',
 }
-
+require('snacks').setup {
+  picker = {
+    layout = 'ivy',
+    auto_close = false,
+  },
+}
 require('neo-tree').setup {
   hide_root_node = true,
   filesystem = {
@@ -91,6 +96,18 @@ require('neo-tree').setup {
       hide_by_name = { 'node_modules', 'venv', '.venv' },
       never_show_by_pattern = { '*.pyc', '*.pyo', '*/__pycache__' },
       hide_root_node = true,
+    },
+    components = {
+      -- This specifically hides the path part of the root node
+      name = function(config, node, state)
+        if node.type == 'root' then
+          return {
+            text = vim.fn.fnamemodify(node.path, ':t'), -- Shows only the folder name
+            highlight = 'NeoTreeRootName',
+          }
+        end
+        return require('neo-tree.sources.filesystem.components').name(config, node, state)
+      end,
     },
   },
   window = {

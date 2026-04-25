@@ -3,6 +3,7 @@
 -- =============================================================================
 
 vim.opt.termguicolors = true
+
 vim.o.number = true
 vim.o.relativenumber = false
 vim.o.mouse = 'a'
