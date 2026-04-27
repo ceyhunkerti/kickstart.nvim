@@ -7,7 +7,7 @@ vim.pack.add { 'https://github.com/nvim-lua/plenary.nvim' }
 vim.pack.add { 'https://github.com/sainnhe/gruvbox-material' }
 vim.g.gruvbox_material_enable_italic = 0
 vim.g.gruvbox_material_disable_italic_comment = 1
-vim.g.gruvbox_material_background = 'medium'
+vim.g.gruvbox_material_background = 'hard'
 vim.g.gruvbox_material_better_performance = 1
 vim.g.gruvbox_material_treesitter = 1
 vim.opt.termguicolors = true
@@ -16,8 +16,8 @@ vim.api.nvim_set_hl(0, 'TSString', { link = 'String' })
 vim.api.nvim_set_hl(0, 'String', { fg = '#9ccc65' })
 
 -- Override indent-blankline highlight groups after the colorscheme loads
-vim.api.nvim_set_hl(0, 'IblIndent', { fg = '#3d3d3d' })
-vim.api.nvim_set_hl(0, 'IblScope', { fg = '#606060' })
+vim.api.nvim_set_hl(0, 'IblIndent', { fg = '#2a2a2a' })
+vim.api.nvim_set_hl(0, 'IblScope', { fg = '#404040' })
 
 -- ── indent-blankline ─────────────────────────────────────────────────────────
 vim.pack.add { 'https://github.com/lukas-reineke/indent-blankline.nvim' }
@@ -86,6 +86,7 @@ require('snacks').setup {
 }
 require('neo-tree').setup {
   hide_root_node = true,
+  enable_git_status = false,
   filesystem = {
     follow_current_file = { enabled = true, leave_dirs_open = true },
     filtered_items = {

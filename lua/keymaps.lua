@@ -179,7 +179,6 @@ vim.defer_fn(function()
   map('n', '<leader><leader>', function()
     snacks.picker.buffers {
       layout = 'ivy', -- Try different layout
-      preview = { enabled = true },
     }
   end, { desc = 'Find buffers' })
   -- Buffers and history
