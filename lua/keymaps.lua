@@ -23,6 +23,10 @@ map('n', '\\', '<cmd>Neotree toggle<cr>', { desc = 'Toggle Neo-tree' })
 
 map({ 'n', 'v', 'o' }, '<C-,>', '^', { desc = 'Go to first non-blank char' })
 map({ 'n', 'v', 'o' }, '<C-.>', '$', { desc = 'Go to last non-blank char' })
+map({ 'n' }, '<C-d>', '<C-d>zz', { desc = 'Scroll down and center' })
+map({ 'n' }, '<C-u>', '<C-u>zz', { desc = 'Scroll up and center' })
+map({ 'n' }, '<C-f>', '<C-f>zz', { desc = 'Scroll down and center' })
+map({ 'n' }, '<C-b>', '<C-b>zz', { desc = 'Scroll up and center' })
 
 -- Buffer navigation
 map('n', '<Tab>', ':bnext<CR>', { noremap = true, silent = true, desc = 'Next buffer' })
@@ -74,8 +78,8 @@ map('n', 'yw', 'yaw', { desc = 'Yank a word' })
 map('n', 'cw', 'caw', { desc = 'Change a word' })
 map('n', 'dw', 'daw', { desc = 'Delete a word' })
 -- Flash ────────────────────────────────────────────────────────────────
-vim.keymap.set({ 'n', 'x', 'o' }, 's', function() require('flash').jump() end, { desc = 'Flash' })
-vim.keymap.set({ 'n', 'x', 'o' }, 'S', function() require('flash').treesitter() end, { desc = 'Flash Treesitter' })
+vim.keymap.set({ 'n', 'o' }, 's', function() require('flash').jump() end, { desc = 'Flash' })
+vim.keymap.set({ 'n', 'o' }, 'S', function() require('flash').treesitter() end, { desc = 'Flash Treesitter' })
 vim.keymap.set('o', 'r', function() require('flash').remote() end, { desc = 'Remote Flash' })
 vim.keymap.set({ 'o', 'x' }, 'R', function() require('flash').treesitter_search() end, { desc = 'Treesitter Search' })
 vim.keymap.set('c', '<c-s>', function() require('flash').toggle() end, { desc = 'Toggle Flash Search' })
