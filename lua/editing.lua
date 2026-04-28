@@ -2,9 +2,11 @@
 -- editing.lua — text editing enhancements
 -- =============================================================================
 
+vim.pack.add { 'https://github.com/folke/flash.nvim' }
 vim.pack.add { 'https://github.com/mg979/vim-visual-multi' }
 vim.pack.add { 'https://github.com/jake-stewart/multicursor.nvim' }
 require('multicursor-nvim').setup {}
+require('flash').setup {}
 
 vim.pack.add { 'https://github.com/NMAC427/guess-indent.nvim' }
 require('guess-indent').setup {}
@@ -68,4 +70,9 @@ require('blink.cmp').setup {
     sorts = { 'score', 'sort_text' },
   },
   signature = { enabled = true },
+}
+
+vim.pack.add { 'https://github.com/m4xshen/hardtime.nvim' }
+require('hardtime').setup {
+  max_count = 1000,
 }

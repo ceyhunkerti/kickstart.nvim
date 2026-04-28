@@ -73,11 +73,23 @@ map('n', '<S-w>', 'b', { desc = 'Move back a word' })
 map('n', 'yw', 'yaw', { desc = 'Yank a word' })
 map('n', 'cw', 'caw', { desc = 'Change a word' })
 map('n', 'dw', 'daw', { desc = 'Delete a word' })
+-- Flash ────────────────────────────────────────────────────────────────
+vim.keymap.set({ 'n', 'x', 'o' }, 's', function() require('flash').jump() end, { desc = 'Flash' })
+vim.keymap.set({ 'n', 'x', 'o' }, 'S', function() require('flash').treesitter() end, { desc = 'Flash Treesitter' })
+vim.keymap.set('o', 'r', function() require('flash').remote() end, { desc = 'Remote Flash' })
+vim.keymap.set({ 'o', 'x' }, 'R', function() require('flash').treesitter_search() end, { desc = 'Treesitter Search' })
+vim.keymap.set('c', '<c-s>', function() require('flash').toggle() end, { desc = 'Toggle Flash Search' })
 
 -- ── Clipboard ────────────────────────────────────────────────────────────────
 map('n', '<leader>x', '"+dd', { desc = 'Cut line to clipboard' })
 map('v', '<leader>x', '"+x', { desc = 'Cut selection to clipboard' })
-map('n', '<leader>Y', 'ggVGy', { desc = 'Copy entire buffer' })
+map('n', '<leader>Y', function()
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  vim.cmd 'normal! ggVGy'
+  vim.api.nvim_win_set_cursor(0, cursor_pos)
+end, { desc = 'Copy entire buffer' })
+
+map('n', '<leader>A', 'ggVG', { desc = 'Select entire buffer' })
 
 -- Delete without yanking
 map('n', 'dx', '"_dd', { desc = 'Delete line (no yank)' })
@@ -119,7 +131,7 @@ map('n', '<leader>E', function()
 end, { desc = 'Copy diagnostic under cursor' })
 
 map('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<cr>', { desc = 'Toggle Trouble diagnostics' })
-map('n', '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<cr>', { desc = 'Trouble workspace diagnostics' })
+map('n', '<leader>XX', '<cmd>trouble diagnostics toggle filter.buf=0<cr>', { desc = 'trouble workspace diagnostics' })
 map('n', '<leader>cs', '<cmd>Trouble symbols toggle focus=false<cr>', { desc = 'Trouble symbols' })
 map('n', '<leader>cl', '<cmd>Trouble lsp toggle focus=false<cr>', { desc = 'Trouble LSP' })
 map('n', '<leader>xq', '<cmd>Trouble quickfix toggle<cr>', { desc = 'Trouble quickfix' })

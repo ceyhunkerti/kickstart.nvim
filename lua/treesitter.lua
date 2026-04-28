@@ -1,16 +1,41 @@
 -- =============================================================================
--- lua/treesitter.lua — folding with ufo
+-- plugins/treesitter.lua — syntax, indentation, textobjects, ufo folds
 -- Keymaps: config/keymaps.lua (zR, zM)
 -- =============================================================================
-
 vim.pack.add {
+  { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
+  { src = 'https://github.com/nvim-treesitter/nvim-treesitter-textobjects', version = 'main' },
   'https://github.com/kevinhwang91/promise-async',
   'https://github.com/kevinhwang91/nvim-ufo',
 }
+-- textobjects setup
+require('nvim-treesitter-textobjects').setup {
+  move = { set_jumps = true },
+}
 
-vim.schedule(function()
-  -- folds setup only
-  require('ufo').setup {
-    provider_selector = function() return { 'indent' } end,
-  }
-end)
+local sel = require 'nvim-treesitter-textobjects.select'
+local keymaps = {
+  ['af'] = '@function.outer',
+  ['if'] = '@function.inner',
+  ['ac'] = '@class.outer',
+  ['ic'] = '@class.inner',
+  ['aa'] = '@parameter.outer',
+  ['ia'] = '@parameter.inner',
+  ['ab'] = '@block.outer',
+  ['ib'] = '@block.inner',
+  ['ak'] = '@entry.outer',
+}
+for lhs, query in pairs(keymaps) do
+  vim.keymap.set({ 'x', 'o' }, lhs, function() sel.select_textobject(query, 'textobjects') end, { desc = 'Select ' .. query })
+end
+
+local mv = require 'nvim-treesitter-textobjects.move'
+vim.keymap.set({ 'n', 'x', 'o' }, ']f', function() mv.goto_next_start('@function.outer', 'textobjects') end)
+vim.keymap.set({ 'n', 'x', 'o' }, '[f', function() mv.goto_previous_start('@function.outer', 'textobjects') end)
+vim.keymap.set({ 'n', 'x', 'o' }, ']c', function() mv.goto_next_start('@class.outer', 'textobjects') end)
+vim.keymap.set({ 'n', 'x', 'o' }, '[c', function() mv.goto_previous_start('@class.outer', 'textobjects') end)
+
+-- folds
+require('ufo').setup {
+  provider_selector = function() return { 'treesitter', 'indent' } end,
+}
